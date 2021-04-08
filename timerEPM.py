@@ -1,8 +1,9 @@
 from tkinter import *
 import time
 import bcolors
+from colorama import init
 
-
+init()
 
 class bcolors:
     rojo = '\033[93m'
