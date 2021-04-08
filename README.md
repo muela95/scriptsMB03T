@@ -1,11 +1,11 @@
 # scriptsMB03T
 ## Timer
 ### Instalación de dependencias
-Para poder usarlo hay que instalar en el ordenador python 3, normalmente la última versión suele funcionar. Se puede descargar [aquí](https://www.python.org/downloads/windows/) en windows.
-Aparte de python3 también hay que instalar las librerías que el timer usa: tkinter y bcolors. Para instalar estas librerías se usa "pip", gestor de paquetes de python que debería venir con la instalación de python 3.
-Para instalar tkinter y bcolors hay que abrir una terminal (o bien abrir el menú de windows y ejecutar símbolo del sistema o bien "Win+R" y ejecutar cmd.exe) y escribir los siguientes comandos:
-  "pip install tk"
-  "pip install bcolors"
+Para poder usarlo hay que instalar python 3, normalmente la última versión suele funcionar. Se puede descargar [aquí](https://www.python.org/downloads/windows/) para windows.
+Aparte de python3 también hay que instalar las librerías que el timer usa: tkinter, colorama y bcolors. Para instalar estas librerías se usa "pip", gestor de paquetes de python que debería venir con la instalación de python 3.
+Abre una terminal (varias opciones: puedes abrir el menú de windows y ejecutar símbolo del sistema o bien pulsar a la vez "Win+R" y ejecutar cmd.exe) escribe este comando y pulsa enter:
+  pip install tk bcolors colorama
+  
 ### Uso
 Doble click en el archivo para abrir, se abren dos ventanas, una consola y una ventana gris. Hay que hacer click en la ventana gris para usar el programa. **El programa no va a funcionar si no has hecho click en la ventana gris y cada vez que hagas click en otro sitio va a dejar de registrar inputs nuevos aunque seguirá contando** 
 ### Teclas
