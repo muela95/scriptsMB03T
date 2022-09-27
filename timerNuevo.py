@@ -16,6 +16,11 @@ normal = Fore.RESET
 colores = [normal, normal, normal, normal]
 import contextlib
 
+print("Timer iniciado")
+print("Deja pulsado W, A, S o D para iniciar cada uno de los 4 timers diferentes, levanta el dedo para parar de contar")
+print("Pulsa espacio para sacar el tiempo que llevas en cada uno de los 4")
+print("Pulsa 0 (el número) para poner todos los timers y contadores a 0.")
+
 def on_press(key):
     global tiemposTotal
     global tiemposFin
