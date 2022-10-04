@@ -3,8 +3,14 @@ from colorama import Fore, init, Style
 import time
 import numpy as np
 import colorama
+import pyperclip
 
 init(autoreset=True)
+
+print("Programa iniciado\nMantén pulsado W/A/S/D para contar tiempo/frecuencia\n
+        Pulsa espacio para copiar los tiempos y frecuencias (formato t1, f1, t2, f2...)\n
+        Pulsa 0 para resetear todo a 0")
+
 
 tiemposInicio = [0,0,0,0]
 tiemposFin = [0,0,0,0]
@@ -98,9 +104,20 @@ def on_release(key):
         colores[3] = normal
         print(f"{colores[0]}\r\tW\t\t{colores[1]}A\t\t{colores[2]}S\t\t{colores[3]}D", end='')
     if key == Key.space:
-        print("\n\n Los tiempos son (w, a, s, d)", np.round(tiemposTotal, 3),
-              "\n las frecuencias son (w, a, s, d)", frecuenciasTotal)
-        # return False
+        print("\n\nTiempo en W ", np.round(tiemposTotal[0], 3),
+              "\nTiempo en A ", np.round(tiemposTotal[1], 3),
+              "\nTiempo en S ", np.round(tiemposTotal[2], 3),
+              "\nTiempo en D ", np.round(tiemposTotal[3], 3),
+              "\n\nLa frecuencia en W ", frecuenciasTotal[0],
+              "\nFrecuencia en A ", frecuenciasTotal[1],
+              "\nFrecuencia en S ", frecuenciasTotal[2],
+              "\nFrecuencia en D ", frecuenciasTotal[3],
+
+              )
+        pyperclip.copy(str(tiemposTotal[0]) + "\t" + str(frecuenciasTotal[0]) + "\t" +
+                       str(tiemposTotal[1]) + "\t" + str(frecuenciasTotal[1]) + "\t" +
+                       str(tiemposTotal[2]) + "\t" + str(frecuenciasTotal[2]) + "\t" +
+                       str(tiemposTotal[3]) + "\t" + str(frecuenciasTotal[3]))
     if key == KeyCode.from_char('0'):
         print("\n\nPongo todo a 0 (confirma, lo que llevabas hasta ahora era: )\n",
               "Tiempos (wasd)", np.round(tiemposTotal, 3), "\n",
