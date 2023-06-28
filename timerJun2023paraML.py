@@ -1,8 +1,13 @@
 import keyboard
 import time
 import os
+import sys
 from datetime import datetime
 from openpyxl import Workbook
+from colorama import init, Fore
+
+# Initialize colorama
+init()
 
 current_directory = os.getcwd()
 print("Current working directory:", current_directory)
@@ -13,7 +18,8 @@ global_timer_start = 0
 global_timer_end = 0
 
 # Individual timer variables
-timers = {'w': [], 'a': [], 's': [], 'd': []}
+timers = {'w': {'running': False, 'start': 0, 'end': 0}, 'a': {'running': False, 'start': 0, 'end': 0},
+          's': {'running': False, 'start': 0, 'end': 0}, 'd': {'running': False, 'start': 0, 'end': 0}}
 key_press_count = {timer: 0 for timer in timers.keys()}
 
 # Create Excel workbook and sheet
@@ -22,35 +28,43 @@ ws = wb.active
 ws.append(['Beginning', 'End', 'Timer', 'Duration'])
 
 def toggle_timer(timer):
+    global global_timer_running
+
     if global_timer_running:
         if timer not in timers:
             print(f'Invalid timer "{timer}"')
             return
 
-        if timer in timers and timers[timer]:
+        if timers[timer]['running']:
             # Stop the timer if it is already running
-            timers[timer].append(time.time() - global_timer_start)
-            print(f'Timer {timer.upper()} stopped at {timers[timer][-1]} seconds.')
+            timers[timer]['running'] = False
+            timers[timer]['end'] = time.time() - global_timer_start
+            print(f'Timer {timer.upper()} stopped at {timers[timer]["end"]:.2f} seconds.')
         else:
-            timers[timer].append(time.time() - global_timer_start)
-            print(f'Timer {timer.upper()} started at {timers[timer][-1]} seconds.')
-    else:
-        print('Global timer is not running. Start the global timer (press "i") before using individual timers.')
+            # Start the timer if it is not running
+            timers[timer]['running'] = True
+            timers[timer]['start'] = time.time() - global_timer_start
+            print(f'{Fore.RED}Timer {timer.upper()} started at {timers[timer]["start"]:.2f} seconds.{Fore.RESET}')
 
 def on_key_press(event):
-    global global_timer_running, global_timer_start, global_timer_end
+    global global_timer_running, global_timer_start, global_timer_end, timers, key_press_count
 
     if event.name == 'i':
         if not global_timer_running:
             global_timer_start = time.time()
             global_timer_running = True
             print('Global timer started.')
+            # Reset the start and end values for each timer
+            for timer in timers:
+                timers[timer]['start'] = 0
+                timers[timer]['end'] = 0
         else:
             print('Global timer is already running.')
 
     elif event.name in timers.keys():
-        toggle_timer(event.name)
-        key_press_count[event.name] += 1
+        if global_timer_running:
+            toggle_timer(event.name)
+            key_press_count[event.name] += 1
 
     if event.name == 'space':
         if global_timer_running and not keyboard.is_pressed('i'):
@@ -67,10 +81,10 @@ def on_key_press(event):
 
             # Write timer data to Excel file
             rows = []
-            for timer, timestamps in timers.items():
-                for i in range(0, len(timestamps), 2):
-                    start_time = timestamps[i]
-                    end_time = timestamps[i+1] if i+1 < len(timestamps) else global_timer_end
+            for timer, data in timers.items():
+                if data['start'] != 0 and data['end'] != 0:
+                    start_time = data['start']
+                    end_time = data['end']
                     duration = end_time - start_time
                     rows.append([start_time, end_time, timer.upper(), duration])
 
@@ -84,19 +98,26 @@ def on_key_press(event):
             print('Timer data saved to', filepath)
 
             # Calculate the total duration of each timer
-            total_durations = {timer: sum([row[3] for row in ws.iter_rows(values_only=True) if row[2] == timer.upper()]) for timer in timers.keys()}
-            total_global_duration = global_timer_end if global_timer_running else 0
+            total_durations = {timer: sum([row[3] for row in ws.iter_rows(values_only=True)
+                                           if row[2] == timer.upper()])
+                                           for timer in timers.keys()}
+            total_global_duration = global_timer_end
             print('Total Durations:')
             for timer, duration in total_durations.items():
-                print(f'{timer.upper()}: {duration} seconds')
-
+                print(f'{timer.upper()}: {duration:.2f} seconds')
+                total_durations[timer] = 0
             # Calculate the frequency of each timer
             print('Frequency:')
             for timer, count in key_press_count.items():
                 if timer != 'global':
-                    print(f'{timer.upper()}: {count} times')
+                    print(f'{timer.upper()}: {count/2} times')
 
-            print(f'Global: {total_global_duration} seconds')
+            print(f'Global: {total_global_duration:.2f} seconds')
+
+            # Relaunch the program
+            print('Relaunching the program...')
+            python = sys.executable
+            os.execl(python, python, *sys.argv)
 
 keyboard.on_press(on_key_press)
 
