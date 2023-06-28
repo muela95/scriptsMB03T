@@ -39,12 +39,12 @@ def toggle_timer(timer):
             # Stop the timer if it is already running
             timers[timer]['running'] = False
             timers[timer]['end'] = time.time() - global_timer_start
-            print(f'Timer {timer.upper()} stopped at {timers[timer]["end"]:.2f} seconds.')
+            print(f'Timer {timer.upper()} stopped at {timers[timer]["end"]:.2f} seconds.', end='\r')
         else:
             # Start the timer if it is not running
             timers[timer]['running'] = True
             timers[timer]['start'] = time.time() - global_timer_start
-            print(f'{Fore.RED}Timer {timer.upper()} started at {timers[timer]["start"]:.2f} seconds.{Fore.RESET}')
+            print(f'{Fore.RED}Timer {timer.upper()} started at {timers[timer]["start"]:.2f} seconds.{Fore.RESET}', end='\r')
 
 def on_key_press(event):
     global global_timer_running, global_timer_start, global_timer_end, timers, key_press_count
