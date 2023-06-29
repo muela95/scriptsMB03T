@@ -8,6 +8,8 @@ from colorama import init, Fore
 
 # Initialize colorama
 init()
+key_press_count = {}
+
 
 current_directory = os.getcwd()
 print("Current working directory:", current_directory)
@@ -20,7 +22,6 @@ global_timer_end = 0
 # Individual timer variables
 timers = {'w': {'running': False, 'start': 0, 'end': 0}, 'a': {'running': False, 'start': 0, 'end': 0},
           's': {'running': False, 'start': 0, 'end': 0}, 'd': {'running': False, 'start': 0, 'end': 0}}
-key_press_count = {timer: 0 for timer in timers.keys()}
 
 # Create Excel workbook and sheet
 wb = Workbook()
@@ -28,7 +29,7 @@ ws = wb.active
 ws.append(['Beginning', 'End', 'Timer', 'Duration'])
 
 def toggle_timer(timer):
-    global global_timer_running
+    global global_timer_running, key_press_count
 
     if global_timer_running:
         if timer not in timers:
@@ -40,11 +41,18 @@ def toggle_timer(timer):
             timers[timer]['running'] = False
             timers[timer]['end'] = time.time() - global_timer_start
             print(f'Timer {timer.upper()} stopped at {timers[timer]["end"]:.2f} seconds.', end='\r')
+            
+            # Increment key press count for the stopped timer
+            if timer not in key_press_count:
+                key_press_count[timer] = 1
+            else:
+                key_press_count[timer] += 1
         else:
             # Start the timer if it is not running
             timers[timer]['running'] = True
             timers[timer]['start'] = time.time() - global_timer_start
             print(f'{Fore.RED}Timer {timer.upper()} started at {timers[timer]["start"]:.2f} seconds.{Fore.RESET}', end='\r')
+
 
 def on_key_press(event):
     global global_timer_running, global_timer_start, global_timer_end, timers, key_press_count
@@ -54,22 +62,18 @@ def on_key_press(event):
             global_timer_start = time.time()
             global_timer_running = True
             print('Global timer started.')
-            # Reset the start and end values for each timer
-            for timer in timers:
-                timers[timer]['start'] = 0
-                timers[timer]['end'] = 0
+
         else:
             print('Global timer is already running.')
 
     elif event.name in timers.keys():
         if global_timer_running:
             toggle_timer(event.name)
-            key_press_count[event.name] += 1
 
     if event.name == 'space':
         if global_timer_running and not keyboard.is_pressed('i'):
-            global_timer_end = time.time() - global_timer_start
             global_timer_running = False
+            global_timer_end = time.time() - global_timer_start  # Calculate global timer duration
             print('Global timer stopped.')
 
             # Generate filename with the format "yyyymmdd-contaje-hh:mm.xlsx"
@@ -96,28 +100,38 @@ def on_key_press(event):
 
             wb.save(filepath)
             print('Timer data saved to', filepath)
+            global_timer_end = time.time() - global_timer_start
+
 
             # Calculate the total duration of each timer
             total_durations = {timer: sum([row[3] for row in ws.iter_rows(values_only=True)
                                            if row[2] == timer.upper()])
-                                           for timer in timers.keys()}
+                               for timer in timers.keys()}
             total_global_duration = global_timer_end
             print('Total Durations:')
             for timer, duration in total_durations.items():
                 print(f'{timer.upper()}: {duration:.2f} seconds')
-                total_durations[timer] = 0
+
             # Calculate the frequency of each timer
+            frequencies = {timer: count for timer, count in key_press_count.items() if timer != 'global'}
+
             print('Frequency:')
-            for timer, count in key_press_count.items():
-                if timer != 'global':
-                    print(f'{timer.upper()}: {count/2} times')
+            for timer, frequency in frequencies.items():
+                print(f'{timer.upper()}: {frequency:.2f} times')
+                key_press_count[timer] = 0
+                    
+            #key_press_count = {timer: 0 for timer in timers.keys()}
+            ws.delete_rows(2, ws.max_row)  # Delete all rows in the worksheet
+            # Reset all variables to zero
+            global_timer_start = 0
+            global_timer_end = 0
+            for timer in timers:
+                timers[timer]['running'] = False
+                timers[timer]['start'] = 0
+                timers[timer]['end'] = 0
 
-            print(f'Global: {total_global_duration:.2f} seconds')
+            print('All variables reset to zero.')
 
-            # Relaunch the program
-            print('Relaunching the program...')
-            python = sys.executable
-            os.execl(python, python, *sys.argv)
 
 keyboard.on_press(on_key_press)
 
